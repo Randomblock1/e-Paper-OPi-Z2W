@@ -1,4 +1,21 @@
-﻿# 说明 explain
+﻿# Orange Pi Zero 2W Fork
+- This code is intended for Orange Pi Zero 2W, but may work on other Orange Pi devices with minimal tweaking
+- Only C mode supported!! Python does NOT work because gpiozero is Rpi only.
+
+## Prerequisites
+- Please install the Orange Pi fork of wiringpi at https://github.com/orangepi-xunlong/wiringOP/tree/next
+- Enable SPI PROPERLY in your OS config!!
+    - See https://forum.armbian.com/topic/18824-spi-communication-nonfunctional-no-data-received/#comment-127975
+    - use [spidev-test](https://github.com/rm-hull/spidev-test) to make sure your spi is working
+
+## Changes
+- Use Wiringpi by default
+- Support Armbian
+- Use SPI channel 1 `/dev/spidev1.0` instead of channel 0 `/dev/spidev0.0` (required for some OPi models, change if yours isn't)
+    - I should probably make this a `#define` but im too lazy and it works for me (pr welcome)
+- Use physical GPIO numbers (board agnostic)
+
+# 说明 explain
 Development 分支用于存放用户的提交的修改代码，经验证后，我们将移植到主分支中；非常感谢您对我们的支持</br>
 The Development branch is used to store the modified code submitted by users. After verification, we will migrate it to the main branch. Thank you very much for your support </br>
 

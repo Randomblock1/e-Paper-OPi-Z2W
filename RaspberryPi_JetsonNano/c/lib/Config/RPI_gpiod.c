@@ -64,10 +64,11 @@ int GPIOD_Export()
     }
     else
     {
-        gpiochip = gpiod_chip_open("/dev/gpiochip0");
+        // changed to chip 1 for Orange Pi Zero 2W
+        gpiochip = gpiod_chip_open("/dev/gpiochip1");
         if (gpiochip == NULL)
         {
-            GPIOD_Debug( "gpiochip0 Export Failed\n");
+            GPIOD_Debug( "gpiochip1 Export Failed\n");
             return -1;
         }
     }

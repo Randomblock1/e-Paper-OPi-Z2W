@@ -105,7 +105,8 @@ void DEV_SPI_WriteByte(uint8_t Value)
 #ifdef USE_BCM2835_LIB
 	bcm2835_spi_transfer(Value);
 #elif USE_WIRINGPI_LIB
-	wiringPiSPIDataRW(0,&Value,1);
+	// changed to SPI channel 1 for Orange Pi Zero 2W
+	wiringPiSPIDataRW(1,&Value,1);
 #elif  USE_LGPIO_LIB 
     lgSpiWrite(SPI_Handle,(char*)&Value, 1);
 #elif USE_DEV_LIB
@@ -129,7 +130,8 @@ void DEV_SPI_Write_nByte(uint8_t *pData, uint32_t Len)
 	char rData[Len];
 	bcm2835_spi_transfernb((char *)pData,rData,Len);
 #elif USE_WIRINGPI_LIB
-	wiringPiSPIDataRW(0, pData, Len);
+	// changed to SPI channel 1 for Orange Pi Zero 2W
+	wiringPiSPIDataRW(1, pData, Len);
 #elif  USE_LGPIO_LIB 
     lgSpiWrite(SPI_Handle,(char*)pData, Len);
 #elif USE_DEV_LIB
@@ -246,9 +248,9 @@ static int DEV_Equipment_Testing(void)
 
 	printf("Current environment: ");
 #ifdef RPI
-	char systems[][9] = {"Raspbian", "Debian", "NixOS"};
+	char systems[][9] = {"Raspbian", "Debian", "NixOS", "Armbian"};
 	int detected = 0;
-	for(int i=0; i<3; i++) {
+	for(int i=0; i<4; i++) {
 		if (strstr(issue_str, systems[i]) != NULL) {
 			printf("%s\n", systems[i]);
 			detected = 1;
@@ -280,13 +282,14 @@ static int DEV_Equipment_Testing(void)
 void DEV_GPIO_Init(void)
 {
 #ifdef RPI
-	EPD_RST_PIN     = 17;
-	EPD_DC_PIN      = 25;
-	EPD_CS_PIN      = 8;
-    EPD_PWR_PIN     = 18;
-	EPD_BUSY_PIN    = 24;
-    EPD_MOSI_PIN    = 10;
-	EPD_SCLK_PIN    = 11;
+    // Physical pin numbers
+	EPD_RST_PIN     = 11;
+	EPD_DC_PIN      = 22;
+	EPD_CS_PIN      = 24;
+    EPD_PWR_PIN     = 12;
+	EPD_BUSY_PIN    = 18;
+    EPD_MOSI_PIN    = 19;
+	EPD_SCLK_PIN    = 23;
 #elif JETSON
 	EPD_RST_PIN     = GPIO17;
 	EPD_DC_PIN      = GPIO25;
@@ -399,8 +402,9 @@ UBYTE DEV_Module_Init(void)
 	bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS0, LOW);     //enable cs0
 
 #elif USE_WIRINGPI_LIB
-	//if(wiringPiSetup() < 0)//use wiringpi Pin number table
-	if(wiringPiSetupGpio() < 0) { //use BCM2835 Pin number table
+	//if(wiringPiSetup() < 0) { //use wiringpi Pin number table
+	// if(wiringPiSetupGpio() < 0) { //use BCM2835 Pin number table
+	if(wiringPiSetupPhys() < 0) { //use physical pin numbering
 		printf("set wiringPi lib failed	!!! \r\n");
 		return 1;
 	} else {
@@ -409,8 +413,9 @@ UBYTE DEV_Module_Init(void)
 
 	// GPIO Config
 	DEV_GPIO_Init();
-	wiringPiSPISetup(0,10000000);
+	// wiringPiSPISetup(0,10000000);
 	// wiringPiSPISetupMode(0, 32000000, 0);
+	wiringPiSPISetupMode(1, 0, 10000000, 0);
 #elif  USE_LGPIO_LIB
     char buffer[NUM_MAXBUF];
     FILE *fp;
@@ -431,20 +436,21 @@ UBYTE DEV_Module_Init(void)
     }
     else
     {
-        GPIO_Handle = lgGpiochipOpen(0);
+        GPIO_Handle = lgGpiochipOpen(1);
         if (GPIO_Handle < 0)
         {
-            Debug( "gpiochip0 Export Failed\n");
+            Debug( "gpiochip1 Export Failed\n");
             return -1;
         }
     }
-    SPI_Handle = lgSpiOpen(0, 0, 10000000, 0);
+	// Channel 1 device 0
+    SPI_Handle = lgSpiOpen(0, 1, 10000000, 0);
     DEV_GPIO_Init();
 #elif USE_DEV_LIB
-	printf("Write and read /dev/spidev0.0 \r\n");
+	printf("Write and read /dev/spidev1.0 \r\n");
     GPIOD_Export();
 	DEV_GPIO_Init();
-	DEV_HARDWARE_SPI_begin("/dev/spidev0.0");
+	DEV_HARDWARE_SPI_begin("/dev/spidev1.0");
     DEV_HARDWARE_SPI_setSpeed(10000000);
 #endif
 
