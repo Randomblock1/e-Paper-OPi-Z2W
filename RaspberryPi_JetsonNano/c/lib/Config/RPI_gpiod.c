@@ -64,11 +64,13 @@ int GPIOD_Export()
     }
     else
     {
-        // changed to chip 1 for Orange Pi Zero 2W
-        gpiochip = gpiod_chip_open("/dev/gpiochip1");
+        // Use configurable GPIO chip (default 1 for Orange Pi Zero 2W)
+        char chip_path[32];
+        snprintf(chip_path, sizeof(chip_path), "/dev/gpiochip%d", GPIO_CHIP);
+        gpiochip = gpiod_chip_open(chip_path);
         if (gpiochip == NULL)
         {
-            GPIOD_Debug( "gpiochip1 Export Failed\n");
+            GPIOD_Debug( "gpiochip%d Export Failed\n", GPIO_CHIP);
             return -1;
         }
     }

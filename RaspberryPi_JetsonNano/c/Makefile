@@ -229,6 +229,15 @@ JETSON_DEV_C = $(wildcard $(DIR_BIN)/sysfs_software_spi.o $(DIR_BIN)/sysfs_gpio.
 
 DEBUG = -D DEBUG
 
+# SPI Configuration - can be overridden on command line
+# Examples:
+#   make EPD=epd2in13 SPI_CHANNEL=0          # Use SPI channel 0
+#   make EPD=epd2in13 GPIO_CHIP=0            # Use GPIO chip 0  
+#   make EPD=epd2in13 SPI_DEVICE_PATH=/dev/spidev0.0  # Use specific device path
+SPI_CHANNEL ?= 1  # Default to channel 1 for Orange Pi Zero 2W compatibility
+GPIO_CHIP ?= 1    # Default to GPIO chip 1 for Orange Pi Zero 2W compatibility  
+SPI_DEVICE_PATH ?= /dev/spidev$(SPI_CHANNEL).0  # Default device path based on channel
+
 # USELIB_RPI = USE_BCM2835_LIB
 USELIB_RPI = USE_WIRINGPI_LIB
 # USELIB_RPI = USE_LGPIO_LIB
@@ -244,7 +253,7 @@ else ifeq ($(USELIB_RPI), USE_LGPIO_LIB)
 else ifeq ($(USELIB_RPI), USE_DEV_LIB)
 	LIB_RPI += -lgpiod -lm 
 endif
-DEBUG_RPI = -D $(USELIB_RPI) -D RPI
+DEBUG_RPI = -D $(USELIB_RPI) -D RPI -D SPI_CHANNEL=$(SPI_CHANNEL) -D GPIO_CHIP=$(GPIO_CHIP) -D SPI_DEVICE_PATH=\"$(SPI_DEVICE_PATH)\"
 
 USELIB_JETSONI = USE_DEV_LIB
 # USELIB_JETSONI = USE_HARDWARE_LIB

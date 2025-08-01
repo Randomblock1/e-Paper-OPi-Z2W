@@ -11,9 +11,29 @@
 ## Changes
 - Use Wiringpi by default
 - Support Armbian
-- Use SPI channel 1 `/dev/spidev1.0` instead of channel 0 `/dev/spidev0.0` (required for some OPi models, change if yours isn't)
-    - I should probably make this a `#define` but im too lazy and it works for me (pr welcome)
+- **Configurable SPI settings** - Use Makefile variables to easily change SPI configuration:
+  - `SPI_CHANNEL`: SPI channel (default: 1 for Orange Pi Zero 2W)
+  - `GPIO_CHIP`: GPIO chip number (default: 1 for Orange Pi Zero 2W)
+  - `SPI_DEVICE_PATH`: Custom SPI device path (default: auto-generated from channel)
 - Use physical GPIO numbers (board agnostic)
+
+### SPI Configuration Examples
+```bash
+# Use default settings (SPI channel 1, GPIO chip 1)
+make RPI EPD=epd2in13
+
+# Use SPI channel 0 instead (for standard Raspberry Pi)
+make RPI EPD=epd2in13 SPI_CHANNEL=0
+
+# Use GPIO chip 0 (for standard Raspberry Pi)  
+make RPI EPD=epd2in13 GPIO_CHIP=0
+
+# Use both channel 0 and chip 0 (standard Raspberry Pi configuration)
+make RPI EPD=epd2in13 SPI_CHANNEL=0 GPIO_CHIP=0
+
+# Use custom SPI device path
+make RPI EPD=epd2in13 SPI_DEVICE_PATH="/dev/spidev0.1"
+```
 
 # 说明 explain
 Development 分支用于存放用户的提交的修改代码，经验证后，我们将移植到主分支中；非常感谢您对我们的支持</br>

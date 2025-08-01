@@ -90,6 +90,22 @@
 #define UDOUBLE uint32_t
 
 /**
+ * SPI Configuration
+ * These can be overridden at compile time via Makefile
+**/
+#ifndef SPI_CHANNEL
+    #define SPI_CHANNEL 1  // Default to channel 1 for Orange Pi Zero 2W compatibility
+#endif
+
+#ifndef SPI_DEVICE_PATH
+    #define SPI_DEVICE_PATH "/dev/spidev1.0"  // Default SPI device path
+#endif
+
+#ifndef GPIO_CHIP
+    #define GPIO_CHIP 1  // Default GPIO chip for Orange Pi Zero 2W
+#endif
+
+/**
  * GPIOI config
 **/
 extern int EPD_RST_PIN;

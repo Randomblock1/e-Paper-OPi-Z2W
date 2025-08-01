@@ -10,7 +10,17 @@
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documnetation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
+# in the Software without restriction, includin#ifdef JETSON
+#ifdef USE_DEV_LIB
+	SYSFS_GPIO_Unexport(EPD_CS_PIN);
+    SYSFS_GPIO_Unexport(EPD_PWR_PIN);
+	SYSFS_GPIO_Unexport(EPD_DC_PIN);
+	SYSFS_GPIO_Unexport(EPD_RST_PIN);
+	SYSFS_GPIO_Unexport(EPD_BUSY_PIN);
+#elif USE_HARDWARE_LIB
+	Debug("not support");
+#endif
+#endifimitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of theex Software, and to permit persons to  whom the Software is
 # furished to do so, subject to the following conditions:
@@ -105,8 +115,8 @@ void DEV_SPI_WriteByte(uint8_t Value)
 #ifdef USE_BCM2835_LIB
 	bcm2835_spi_transfer(Value);
 #elif USE_WIRINGPI_LIB
-	// changed to SPI channel 1 for Orange Pi Zero 2W
-	wiringPiSPIDataRW(1,&Value,1);
+	// Use configurable SPI channel (default 1 for Orange Pi Zero 2W)
+	wiringPiSPIDataRW(SPI_CHANNEL, &Value, 1);
 #elif  USE_LGPIO_LIB 
     lgSpiWrite(SPI_Handle,(char*)&Value, 1);
 #elif USE_DEV_LIB
@@ -130,8 +140,8 @@ void DEV_SPI_Write_nByte(uint8_t *pData, uint32_t Len)
 	char rData[Len];
 	bcm2835_spi_transfernb((char *)pData,rData,Len);
 #elif USE_WIRINGPI_LIB
-	// changed to SPI channel 1 for Orange Pi Zero 2W
-	wiringPiSPIDataRW(1, pData, Len);
+	// Use configurable SPI channel (default 1 for Orange Pi Zero 2W)
+	wiringPiSPIDataRW(SPI_CHANNEL, pData, Len);
 #elif  USE_LGPIO_LIB 
     lgSpiWrite(SPI_Handle,(char*)pData, Len);
 #elif USE_DEV_LIB
@@ -415,7 +425,8 @@ UBYTE DEV_Module_Init(void)
 	DEV_GPIO_Init();
 	// wiringPiSPISetup(0,10000000);
 	// wiringPiSPISetupMode(0, 32000000, 0);
-	wiringPiSPISetupMode(1, 0, 10000000, 0);
+	// Use configurable SPI channel (default 1 for Orange Pi Zero 2W)
+	wiringPiSPISetupMode(SPI_CHANNEL, 0, 10000000, 0);
 #elif  USE_LGPIO_LIB
     char buffer[NUM_MAXBUF];
     FILE *fp;
@@ -436,21 +447,21 @@ UBYTE DEV_Module_Init(void)
     }
     else
     {
-        GPIO_Handle = lgGpiochipOpen(1);
+        GPIO_Handle = lgGpiochipOpen(GPIO_CHIP);
         if (GPIO_Handle < 0)
         {
-            Debug( "gpiochip1 Export Failed\n");
+            Debug( "gpiochip%d Export Failed\n", GPIO_CHIP);
             return -1;
         }
     }
-	// Channel 1 device 0
-    SPI_Handle = lgSpiOpen(0, 1, 10000000, 0);
+	// Use configurable SPI channel (default 1 for Orange Pi Zero 2W)
+    SPI_Handle = lgSpiOpen(0, SPI_CHANNEL, 10000000, 0);
     DEV_GPIO_Init();
 #elif USE_DEV_LIB
-	printf("Write and read /dev/spidev1.0 \r\n");
+	printf("Write and read %s \r\n", SPI_DEVICE_PATH);
     GPIOD_Export();
 	DEV_GPIO_Init();
-	DEV_HARDWARE_SPI_begin("/dev/spidev1.0");
+	DEV_HARDWARE_SPI_begin(SPI_DEVICE_PATH);
     DEV_HARDWARE_SPI_setSpeed(10000000);
 #endif
 
